@@ -40,16 +40,37 @@ class AuthController extends Controller {
 
 
   public function logout() {
-    auth('api')->logout();
+    $token = request()->cookie('jwt');
 
-    return response()->json(['message' => 'Successfully logged out'])
-      ->withCookie(cookie()->forget('jwt'));
+    if ($token) {
+      // Set the token and invalidate it
+      JWTAuth::setToken($token)->invalidate();
+    }
+
+    // Clear the cookie
+    $cookie = cookie()->forget('jwt');
+
+    return response()->json(['message' => 'Successfully logged out'])->withCookie($cookie);
   }
+
 
 
   public function refresh() {
-    return $this->respondWithToken(auth('api')->refresh());
+    // Get the token from the request cookie
+    $token = request()->cookie('jwt');
+
+    if (!$token) {
+      return response()->json(['error' => 'No token provided'], 401);
+    }
+
+    // Set the token and attempt to refresh it
+    JWTAuth::setToken($token);
+    $newToken = JWTAuth::refresh($token);
+
+    // Respond with the new token
+    return $this->respondWithToken($newToken);
   }
+
 
 
   protected function respondWithToken($token) {

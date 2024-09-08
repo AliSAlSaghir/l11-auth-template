@@ -20,7 +20,7 @@ class CheckRole {
     if (!in_array(auth('api')->user()->role, $roles)) {
       return response()->json([
         'error' => 'Unauthorized action',
-        'message' => 'You do not have permission to update this post'
+        'message' => 'You do not have permission to access this resource'
       ], 403);
     }
 
